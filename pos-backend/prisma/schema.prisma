@@ -1,0 +1,139 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider      = "prisma-client-js"
+  binaryTargets = ["native", "linux-musl", "debian-openssl-1.1.x", "linux-musl-openssl-3.0.x"]
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model Product {
+  id              String           @id
+  productName     String
+  uom             String
+  buyPrice        Int
+  sellPriceLevel1 Int
+  sellPriceLevel2 Int
+  reorderLvl      Int
+  qtyOnHand       Int
+  brandName       String
+  isActive        Boolean
+  categoryId      Int
+  category        Category         @relation(fields: [categoryId], references: [id], onDelete: SetDefault, onUpdate: Cascade)
+  inventories     Inventory[]
+  createdAt       DateTime         @default(now())
+  updatedAt       DateTime         @updatedAt
+  SaleDetail      SaleDetail[]
+  PurchaseDetail  PurchaseDetail[]
+}
+
+model Category {
+  id           Int       @id @default(autoincrement())
+  categoryName String
+  products     Product[]
+  createdAt    DateTime  @default(now())
+  updatedAt    DateTime  @updatedAt
+}
+
+model Inventory {
+  id        Int      @id @default(autoincrement())
+  inQty     Int
+  outQty    Int
+  productId String
+  remark    String
+  product   Product  @relation(fields: [productId], references: [id])
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model Sale {
+  id          String       @id
+  customerId  Int
+  customer    Customer     @relation(fields: [customerId], references: [id], onDelete: SetDefault, onUpdate: Cascade)
+  saleDetails SaleDetail[]
+  discount    Int
+  total       Int          @default(0)
+  grandTotal  Int
+  createdAt   DateTime     @default(now())
+  updatedAt   DateTime     @updatedAt
+}
+
+model Purchase {
+  id              String           @id
+  grandTotal      Int
+  supplierId      Int
+  supplier        Supplier         @relation(fields: [supplierId], references: [id], onUpdate: SetDefault, onDelete: SetDefault)
+  remark          String           @default("no comment")
+  purchaseDate    DateTime
+  createdAt       DateTime         @default(now())
+  updatedAt       DateTime         @updatedAt
+  purchaseDetails PurchaseDetail[]
+}
+
+model SaleDetail {
+  id          String   @id
+  productId   String
+  productName String
+  product     Product  @relation(fields: [productId], references: [id])
+  qty         Int
+  price       Int
+  total       Int
+  sale        Sale     @relation(fields: [saleId], references: [id], onDelete: SetDefault, onUpdate: Cascade)
+  saleId      String
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+}
+
+model Customer {
+  id        Int      @id @default(autoincrement())
+  name      String
+  address   String
+  phone     String
+  sales     Sale[]
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model Supplier {
+  id        Int        @id @default(autoincrement())
+  name      String
+  address   String
+  phone     String
+  purchases Purchase[]
+  createdAt DateTime   @default(now())
+  updatedAt DateTime   @updatedAt
+}
+
+model PurchaseDetail {
+  id          String   @id
+  productId   String
+  productName String
+  product     Product  @relation(fields: [productId], references: [id])
+  qty         Int
+  price       Int
+  total       Int
+  purchase    Purchase @relation(fields: [purchaseId], references: [id], onDelete: SetDefault, onUpdate: Cascade)
+  purchaseId  String
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+}
+
+model User {
+  id           Int      @id @default(autoincrement())
+  name         String
+  email        String   @unique
+  password     String
+  refreshToken String
+  role         Role     @default(USER)
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+}
+
+enum Role {
+  USER
+  ADMIN
+}

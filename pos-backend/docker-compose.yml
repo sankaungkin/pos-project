@@ -1,0 +1,28 @@
+version: '3.8'
+services:
+  pos-api:
+    container_name: nest-api
+    build:
+      context: .
+      dockerfile: Dockerfile
+    ports:
+      - '5544:5544'
+    depends_on:
+      - posdb
+    env_file:
+      - .env
+
+  posdb:
+    image: postgres:15
+    container_name: posdb
+    restart: always
+    ports:
+      - '5432:5432'
+    env_file:
+      - .env
+    volumes:
+      - posdb:/var/lib/postgresql/data
+
+volumes:
+  posdb:
+    name: pos-volumes
