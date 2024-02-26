@@ -1,10 +1,21 @@
 import { NestFactory } from '@nestjs/core';
 import { AppModule } from './app.module';
 import * as cookieParser from 'cookie-parser';
+import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
 
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
   const PORT = process.env.PORT || 5555;
+
+  const config = new DocumentBuilder()
+    .setTitle('Point Of Sales')
+    .setDescription('The PoS API')
+    .setVersion('1.0')
+    .addTag('pos')
+    .build();
+
+  const document = SwaggerModule.createDocument(app, config);
+  SwaggerModule.setup('api', app, document);
 
   const options = {
     origin: [
